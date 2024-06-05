@@ -1,0 +1,26 @@
+{
+  "name": "eyes-bin",
+  "module": "main.ts",
+  "scripts": {
+    "start": "bun run main.ts",
+    "start-w": "bun --watch run main.ts",
+    "build": "bun build main.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/koa-logger": "^3.1.5",
+    "@types/koa-router": "^7.4.8"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "crypto": "^1.0.1",
+    "koa": "^2.15.3",
+    "koa-body": "^6.0.1",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^12.0.1",
+    "mongoose": "^8.4.1"
+  }
+}
