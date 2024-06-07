@@ -1,17 +1,15 @@
-import Koa from "koa";
-import KoaRouter from "koa-router";
-import KoaLogger from "koa-logger";
-import koaBody from "koa-body";
-//
-import tv from "./tv";
-//
-const koa = new Koa();
-const router = new KoaRouter();
-koa.use(KoaLogger());
-koa.use(koaBody({ multipart: true }));
-// Add more middleware here
-router.use("/tv", tv.routes());
-// Add more routes here
-koa.use(router.routes()).use(router.allowedMethods());
-// Add more routes here
-export default koa;
+import { Hono } from "hono";
+import { logger } from "hono/logger";
+import { tvInit } from "~/controllers/tv";
+import models from "~/models";
+export const routes = new Hono();
+// Add your routes here
+routes.use(logger());
+// Example route
+routes.post("/tv/:id", async (c) => {
+  return await tvInit(c);
+});
+
+routes.all("*", (c) => {
+  return c.text("Not Found!", { status: 404 });
+});

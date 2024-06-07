@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import axios from "axios";
+
 if (!process.env.MONGODB_URI) throw Error("MONGODB_URI is already set!");
 try {
   await mongoose.connect(process.env.MONGODB_URI || "");
@@ -16,6 +18,33 @@ process.on("SIGTERM", () => {
 // 导出mongoose
 export const db = mongoose;
 // 存key对象
-export const bins = [];
+export const bins = {};
 // 存币安配置
-export const binConfig = {};
+export const binanceConfig = {
+  exchangeInfo: await axios.get(`${process.env.BINANCE_API_URL}/fapi/v1/exchangeInfo`).then((res) => {
+    let symbols = res.data.symbols.filter((s: any) => s.status === "TRADING");
+    let obj: { [symbol: string]: any } = {};
+    symbols.forEach((s: any) => {
+      obj[`${s.symbol}.P`] = {
+        // 市价吃单(相对于标记价格)允许可造成的最大价格偏离比例
+        marketTakeBound: s.marketTakeBound,
+        // 价格限制
+        PRICE_FILTER: s.filters.find((f: any) => f.filterType === "PRICE_FILTER"),
+        // 数量限制
+        LOT_SIZE: s.filters.find((f: any) => f.filterType === "LOT_SIZE"),
+        // 市价订单数量限制
+        MARKET_LOT_SIZE: s.filters.find((f: any) => f.filterType === "MARKET_LOT_SIZE")
+      };
+    });
+    return obj;
+  }),
+  timeOffset: await axios.get(`${process.env.BINANCE_API_URL}/fapi/v1/time`).then((res) => {
+    return res.data.serverTime - Date.now();
+  })
+};
+
+export const config = {
+  db,
+  bins,
+  binanceConfig
+};

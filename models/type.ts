@@ -3,7 +3,7 @@ import { Schema } from "mongoose";
 
 const typeSchema = new Schema(
   {
-    key_id: { type: String }, // 用户id
+    key_id: { type: String }, // 策略id
     symbol: { type: String, required: true }, // 名称
     leverage: { type: Number, required: true }, // 倍数
     type: { type: String, required: true, enum: ["MARKET", "LIMIT"] }, // LIMIT 限价单
