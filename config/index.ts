@@ -16,9 +16,9 @@ process.on("SIGTERM", () => {
   process.exit();
 });
 // 导出mongoose
-export const db = mongoose;
+export const db = mongoose.connection.useDb("bin");
 // 存key对象
-export const bins = {};
+export const bins: { [symbol: string]: any } = {};
 // 存币安配置
 export const binanceConfig = {
   exchangeInfo: await axios.get(`${process.env.BINANCE_API_URL}/fapi/v1/exchangeInfo`).then((res) => {

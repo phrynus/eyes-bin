@@ -1,6 +1,7 @@
 import models from "~/models";
 import { initTag } from "./initTag";
 import { initKey } from "./initKey";
+import { bins } from "~/config";
 
 let safeRepeatList: any = [];
 
@@ -38,13 +39,27 @@ export const tvInit = async (c: any) => {
     PlotLog.msg = "策略初始化成功";
     PlotLog.comment = binParams.comment;
     for (let key in plot.key_id) {
-      initKey({
-        key: await models.Key.findById(key),
-        plot,
-        params: binParams,
-        body
-      });
+      let ket;
+      if (bins[key]) {
+        ket = bins[key];
+      } else {
+        ket = await models.Key.findById(key);
+      }
+      if (ket) {
+        models.Key.findById(key).then((k: any) => {
+          bins[key] = k;
+        });
+        initKey({
+          key: ket,
+          plot,
+          params: binParams,
+          body
+        });
+      } else {
+        plot.key_id = plot.key_id.filter((k: any) => k != key);
+      }
     }
+    await plot.save();
     PlotLog.save();
     return c.text("ok");
   } catch (e: any) {

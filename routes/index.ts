@@ -12,5 +12,5 @@ routes.post("/tv/:id", async (c) => {
 });
 
 routes.all("*", (c) => {
-  return c.text("Not Found!", { status: 404 });
+  return c.text("???", { status: 200 });
 });
