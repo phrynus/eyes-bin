@@ -6,6 +6,7 @@ export class BinanceApi {
   axios: any;
   key: string;
   secret: string;
+  resend: number;
   constructor(key: string, secret: string) {
     this.axios = axios.create({
       baseURL: process.env.BINANCE_API_URL
@@ -13,6 +14,7 @@ export class BinanceApi {
     // KEY密钥
     this.key = key;
     this.secret = secret;
+    this.resend = 4;
     const _this = this;
     this.axios.interceptors.request.use((config: any) => {
       if (!config.params) config.params = {};
@@ -37,7 +39,19 @@ export class BinanceApi {
       }
     );
   }
-  _(options: AxiosRequestConfig) {
-    return this.axios(options);
+  _(options: AxiosRequestConfig, resend = false) {
+    let i = 0;
+    return this.axios(options).catch((error: any) => {
+      if (resend && error.response.status === 400 && i < this.resend) {
+        i++;
+        console.log({
+          key: error.config.headers["X-MBX-APIKEY"],
+          url: error.config.url,
+          data: error.response.data
+        });
+        return this.axios(options);
+      }
+      return Promise.reject(error);
+    });
   }
 }

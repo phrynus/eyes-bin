@@ -7,6 +7,7 @@ const keyLogSchema = new Schema(
     plot: { type: Object },
     msg: { type: String },
     comment: { type: String },
+    body: { type: Object },
     symbol: { type: String },
     symbol_type: { type: Object },
     symbol_info: { type: Object },

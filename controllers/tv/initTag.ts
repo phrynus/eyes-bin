@@ -19,8 +19,8 @@ export const initTag = async (body: any) => {
       position_side: _data.market_position.toUpperCase(),
       side: "OPEN|CLOSE|INCR|DECR|TURNUP|TURNDOWN",
       action: _data.action.toUpperCase(),
-      market_size: Number(_data.market_position_size), //市值
-      quantity: Number(_data.contracts), //数量
+      market_size: Number(_data.market_position_size), // 当前仓位
+      quantity: Number(_data.market_position_size) - Number(_data.prev_market_position_size), //交易数量
       price: Number(_data.price), //价格
       comment: _data.comment
     };

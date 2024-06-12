@@ -25,15 +25,30 @@ export const binanceConfig = {
     let symbols = res.data.symbols.filter((s: any) => s.status === "TRADING");
     let obj: { [symbol: string]: any } = {};
     symbols.forEach((s: any) => {
+      let a = s.filters.find((f: any) => f.filterType === "PRICE_FILTER");
+      let b = s.filters.find((f: any) => f.filterType === "LOT_SIZE");
+      let c = s.filters.find((f: any) => f.filterType === "MARKET_LOT_SIZE");
       obj[`${s.symbol}.P`] = {
         // 市价吃单(相对于标记价格)允许可造成的最大价格偏离比例
         marketTakeBound: s.marketTakeBound,
         // 价格限制
-        PRICE_FILTER: s.filters.find((f: any) => f.filterType === "PRICE_FILTER"),
+        PRICE_FILTER: {
+          maxPrice: Number(a.maxPrice),
+          minPrice: Number(a.minPrice),
+          tickSize: Number(a.tickSize)
+        },
         // 数量限制
-        LOT_SIZE: s.filters.find((f: any) => f.filterType === "LOT_SIZE"),
+        LOT_SIZE: {
+          maxQty: Number(b.maxQty),
+          minQty: Number(b.minQty),
+          stepSize: Number(b.stepSize)
+        },
         // 市价订单数量限制
-        MARKET_LOT_SIZE: s.filters.find((f: any) => f.filterType === "MARKET_LOT_SIZE")
+        MARKET_LOT_SIZE: {
+          maxQty: Number(c.maxQty),
+          minQty: Number(c.minQty),
+          stepSize: Number(c.stepSize)
+        }
       };
     });
     return obj;

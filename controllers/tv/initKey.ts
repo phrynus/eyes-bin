@@ -4,14 +4,15 @@ import { initParams } from "./initParams";
 import { BinanceApi } from "~/utils/binanceApi";
 
 export const initKey = async (o: any) => {
-  let { key, plot, params } = o;
+  const { key, plot, params, body } = o;
   const keyLog = await new models.KeyLog({
     key: key,
     plot: plot,
     msg: ``,
-    comment: "",
+    comment: params.comment,
     symbol: params.symbol,
-    params: params
+    params: params,
+    body: body
   }).save();
   try {
     const vip = new Date(key.vip_time);
@@ -26,14 +27,22 @@ export const initKey = async (o: any) => {
     if (!symbolInfo) throw `${params.symbol} 不在交易名单`;
     keyLog.symbol_info = symbolInfo;
     const binanceApi = new BinanceApi(key.key, key.secret);
-    params = await initParams({ symbolInfo, type, key, plot, params, binanceApi, keyLog });
-    //
-    key.save();
-    keyLog.save();
+    const bin_params = await initParams({ symbolInfo, type, key, plot, params, binanceApi, keyLog });
+    keyLog.bin_params = bin_params;
+    const bin_result = await binanceApi._(
+      {
+        method: "POST",
+        url: `/fapi/v1/order`,
+        params: bin_params
+      },
+      true
+    );
+    keyLog.bin_result = bin_result;
+    keyLog.msg = "ok";
+    await keyLog.save();
   } catch (e: any) {
     keyLog.msg = e.toString();
-    keyLog.save();
-    key.save();
+    await keyLog.save();
     console.log(e);
   }
 };
