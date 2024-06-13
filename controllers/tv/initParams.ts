@@ -11,12 +11,12 @@ export const initParams = async (o: any) => {
     const account = await binanceApi._({ method: "GET", url: "/fapi/v2/account" });
     const positions = account.positions.filter((p: any) => Number(p.positionInitialMargin) > 0);
     // 取当前持仓
-    const currentPosition = positions.find((p: any) => p.symbol === params.symbol.split(".")[0]);
-    key.ac_num = positions || {};
+    const currentPosition = positions.find((p: any) => p.symbol === params.symbol.split(".")[0]) || { positionAmt: 0 };
+    key.ac_num = positions || [];
     delete account.positions;
-    key.ac_sum = account || {};
+    key.ac_sum = { ...account, positions };
     keyLog.bin_positions = { ...account, positions: positions };
-    key.save();
+    models.Key.updateOne({ _id: key._id }, { $set: key }, { upsert: true });
     // 持仓处理
     if (!type.necessary) {
       if (params.side !== "CLOSE") {
@@ -46,7 +46,8 @@ export const initParams = async (o: any) => {
       type: type.type,
       positionSide: params.position_side,
       side: params.action,
-      quantity: params.quantity
+      // 控制params.quantity小数点位数为symbolInfo.quantityPrecision
+      quantity: params.quantity.toFixed(symbolInfo.quantityPrecision)
     };
 
     // 全部平掉
@@ -56,15 +57,15 @@ export const initParams = async (o: any) => {
     // 限价开仓 市价平仓
     if (type.type === "LIMITMARKET") {
       if (params.side === "CLOSE" || params.side === "DECR") {
-        type.type = "MARKET";
+        bin_params.type = "MARKET";
       } else {
-        type.type = "LIMIT";
+        bin_params.type = "LIMIT";
       }
     }
     // 挂单
-    if (type.type === "LIMIT") {
-      bin_params.price = params.price;
-      bin_params.timeInForce = params.timeInForce;
+    if (bin_params.type === "LIMIT") {
+      bin_params.price = params.price.toFixed(symbolInfo.pricePrecision);
+      bin_params.timeInForce = type.timeInForce;
       // 使用最佳挂单价格
       if (type.useBestPrice) {
         const bestPrice = await binanceApi._({
@@ -72,14 +73,12 @@ export const initParams = async (o: any) => {
           url: "/fapi/v1/ticker/bookTicker",
           params: { symbol: bin_params.symbol }
         });
-        bin_params.price = bin_params.side == "BUY" ? bestPrice.bidPrice : bestPrice.askPrice;
+        let price = bin_params.side == "BUY" ? bestPrice.bidPrice : bestPrice.askPrice;
+        bin_params.price = Number(price).toFixed(symbolInfo.pricePrecision);
       }
     }
     // 补全仓位
     if (params.side !== "TURNUP" && params.side !== "TURNDOWN" && params.side !== "OPEN" && type.balance) {
-      if (currentPosition.positionAmt) {
-        currentPosition.positionAmt = 0;
-      }
       let a = Math.abs(params.market_size);
       let b = Math.abs(Number(currentPosition.positionAmt));
       // 判断a 是否与b 相差是否大于10%
@@ -89,6 +88,7 @@ export const initParams = async (o: any) => {
         bin_params.quantity = b - a;
         bin_params.side = bin_params.side === "BUY" ? "SELL" : "BUY";
       }
+      bin_params.quantity = Number(bin_params.quantity).toFixed(symbolInfo.quantityPrecision);
     }
     // 提前平仓
     if (params.side === "TURNUP") {
@@ -135,6 +135,7 @@ export const initParams = async (o: any) => {
 
     return bin_params;
   } catch (e) {
+    console.log(e);
     throw e;
   }
 };

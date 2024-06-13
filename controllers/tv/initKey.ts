@@ -29,20 +29,30 @@ export const initKey = async (o: any) => {
     const binanceApi = new BinanceApi(key.key, key.secret);
     const bin_params = await initParams({ symbolInfo, type, key, plot, params, binanceApi, keyLog });
     keyLog.bin_params = bin_params;
-    const bin_result = await binanceApi._(
-      {
-        method: "POST",
-        url: `/fapi/v1/order`,
-        params: bin_params
-      },
-      true
-    );
-    keyLog.bin_result = bin_result;
-    keyLog.msg = "ok";
+    if (bin_params.timeInForce && bin_params.timeInForce !== "GTC") {
+      await keyLog.save();
+    }
+    keyLog.bin_result = await binanceApi
+      ._(
+        {
+          method: "POST",
+          url: `/fapi/v1/order`,
+          params: bin_params
+        },
+        true
+      )
+      .then((res: any) => {
+        keyLog.msg = "ok";
+        return res;
+      })
+      .catch((e: any) => {
+        keyLog.msg = e.response.data.msg || e.message;
+        return e.response.data || e.message;
+      });
     await keyLog.save();
+    console.log("ok");
   } catch (e: any) {
-    keyLog.msg = e.toString();
+    keyLog.msg = e.message;
     await keyLog.save();
-    console.log(e);
   }
 };

@@ -42,14 +42,11 @@ export class BinanceApi {
   _(options: AxiosRequestConfig, resend = false) {
     let i = 0;
     return this.axios(options).catch((error: any) => {
-      if (resend && error.response.status === 400 && i < this.resend) {
-        i++;
-        console.log({
-          key: error.config.headers["X-MBX-APIKEY"],
-          url: error.config.url,
-          data: error.response.data
-        });
-        return this.axios(options);
+      if (resend && error.response.status === 400) {
+        if (i < this.resend) {
+          i++;
+          return this.axios(options);
+        }
       }
       return Promise.reject(error);
     });

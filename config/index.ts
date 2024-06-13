@@ -29,6 +29,10 @@ export const binanceConfig = {
       let b = s.filters.find((f: any) => f.filterType === "LOT_SIZE");
       let c = s.filters.find((f: any) => f.filterType === "MARKET_LOT_SIZE");
       obj[`${s.symbol}.P`] = {
+        // 数量小数点位数(仅作为系统精度使用，注意同stepSize 区分）
+        quantityPrecision: s.quantityPrecision,
+        // 价格小数点位数(仅作为系统精度使用，注意同tickSize 区分）
+        pricePrecision: s.pricePrecision,
         // 市价吃单(相对于标记价格)允许可造成的最大价格偏离比例
         marketTakeBound: s.marketTakeBound,
         // 价格限制
