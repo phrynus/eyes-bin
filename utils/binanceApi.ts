@@ -1,5 +1,4 @@
 import axios, { type AxiosRequestConfig } from "axios";
-import { binanceConfig } from "~/config";
 import crypto from "crypto";
 
 export class BinanceApi {
@@ -14,7 +13,7 @@ export class BinanceApi {
     // KEY密钥
     this.key = key;
     this.secret = secret;
-    this.resend = 4;
+    this.resend = 9;
     const _this = this;
     this.axios.interceptors.request.use((config: any) => {
       if (!config.params) config.params = {};

@@ -38,25 +38,23 @@ export const tvInit = async (c: any) => {
     if (!plot) throw "策略不存在";
     PlotLog.msg = "策略初始化成功";
     PlotLog.comment = binParams.comment;
-    for (let key in plot.key_id) {
-      let ket;
-      if (bins[key]) {
-        ket = bins[key];
+    for (let key_id in plot.key_id) {
+      let key;
+      if (bins[key_id]) {
+        key = bins[key_id];
       } else {
-        ket = await models.Key.findById(key);
+        key = await models.Key.findById(key_id);
       }
-      if (ket) {
-        models.Key.findById(key).then((k: any) => {
-          bins[key] = k;
-        });
+      if (key) {
+        bins[key] = key
         initKey({
-          key: ket,
+          key,
           plot,
           params: binParams,
           body
         });
       } else {
-        plot.key_id = plot.key_id.filter((k: any) => k != key);
+        plot.key_id = plot.key_id.filter((k: any) => k != key_id);
       }
     }
     await plot.save();

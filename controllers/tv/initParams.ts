@@ -29,6 +29,29 @@ export const initParams = async (o: any) => {
         if (_positions.length > key.ac_max) throw "超出最大仓位";
       }
     }
+    // 补全仓位
+    if (
+      params.side !== "TURNUP" &&
+      params.side !== "TURNDOWN" &&
+      params.side !== "OPEN" &&
+      params.side !== "DECR" &&
+      params.side !== "CLOSE" &&
+      type.balance
+    ) {
+      let a = Math.abs(Number(params.market_size));
+      let b = Math.abs(Number(currentPosition.positionAmt));
+      let num = 0;
+      // 判断a 是否与b 相差是否大于10%
+      if (a / b > 1.1) {
+        num = a - b;
+      } else if (a / b < 0.9) {
+        num = b - a;
+        params.action = params.action === "BUY" ? "SELL" : "BUY";
+      } else {
+        num = params.quantity;
+      }
+      params.quantity = Number(num);
+    }
 
     if (type.type === "MARKET") {
       //
@@ -52,7 +75,7 @@ export const initParams = async (o: any) => {
 
     // 全部平掉
     if (params.side === "CLOSE") {
-      bin_params.quantity = symbolInfo.MARKET_LOT_SIZE.maxQty;
+      bin_params.quantity = symbolInfo.MARKET_LOT_SIZE.maxQty.toFixed(symbolInfo.quantityPrecision);
     }
     // 限价开仓 市价平仓
     if (type.type === "LIMITMARKET") {
@@ -77,19 +100,7 @@ export const initParams = async (o: any) => {
         bin_params.price = Number(price).toFixed(symbolInfo.pricePrecision);
       }
     }
-    // 补全仓位
-    if (params.side !== "TURNUP" && params.side !== "TURNDOWN" && params.side !== "OPEN" && type.balance) {
-      let a = Math.abs(params.market_size);
-      let b = Math.abs(Number(currentPosition.positionAmt));
-      // 判断a 是否与b 相差是否大于10%
-      if (a / b > 1.1) {
-        bin_params.quantity = a - b;
-      } else if (a / b < 0.9) {
-        bin_params.quantity = b - a;
-        bin_params.side = bin_params.side === "BUY" ? "SELL" : "BUY";
-      }
-      bin_params.quantity = Number(bin_params.quantity).toFixed(symbolInfo.quantityPrecision);
-    }
+
     // 提前平仓
     if (params.side === "TURNUP") {
       await binanceApi._({
