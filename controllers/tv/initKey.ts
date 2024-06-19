@@ -54,5 +54,6 @@ export const initKey = async (o: any) => {
   } catch (e: any) {
     keyLog.msg = e.message;
     await keyLog.save();
+    console.error(e.message);
   }
 };

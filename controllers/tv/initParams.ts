@@ -1,7 +1,7 @@
 import models from "~/models";
 
 export const initParams = async (o: any) => {
-  const { symbolInfo, type, key, plot, params, binanceApi, keyLog } = o;
+  const { symbolInfo, type, key, params, binanceApi, keyLog } = o;
 
   try {
     // const positionSide = await binanceApi._({ method: "GET", url: "/fapi/v1/positionSide/dual" });
@@ -132,17 +132,25 @@ export const initParams = async (o: any) => {
       });
     }
     // 更改杠杆
-    binanceApi._({
-      method: "POST",
-      url: "/fapi/v1/leverage",
-      params: { symbol: bin_params.symbol, leverage: type.leverage }
-    });
+    binanceApi
+      ._({
+        method: "POST",
+        url: "/fapi/v1/leverage",
+        params: { symbol: bin_params.symbol, leverage: type.leverage }
+      })
+      .catch((e: any) => {
+        console.log("更改杠杆", e.message);
+      });
     // 变换逐全仓模式
-    binanceApi._({
-      method: "POST",
-      url: "/fapi/v1/marginType",
-      params: { symbol: bin_params.symbol, marginType: type.marginMode }
-    });
+    binanceApi
+      ._({
+        method: "POST",
+        url: "/fapi/v1/marginType",
+        params: { symbol: bin_params.symbol, marginType: type.marginMode }
+      })
+      .catch((e: any) => {
+        console.log("变换逐全仓模式", e.message);
+      });
 
     return bin_params;
   } catch (e) {

@@ -1,7 +1,15 @@
 import models from "~/models";
-import { initTag } from "./initTag";
-import { initKey } from "./initKey";
 import { bins } from "~/config";
+type Position = "LONG" | "SHORT";
+type Side = "OPEN" | "CLOSE" | "INCR" | "DECR" | "TURNUP" | "TURNDOWN";
+type ResultType = {
+  symbol: string;
+  position_side: Position;
+  side: Side;
+  quantity: number;
+  price: number;
+  comment: string;
+};
 
 let safeRepeatList: any = [];
 
@@ -21,23 +29,38 @@ const repeatData = (c: any) => {
   return true;
 };
 
-export const tvInit = async (c: any) => {
+export const oInit = async (c: any) => {
   const { id } = c.req.param();
   const isJson = c.req.header("content-type").includes("application/json");
   const body = isJson ? await c.req.json() : await c.req.parseBody();
-
   const PlotLog = await new models.PlotLog({ plot_id: id, params: body }).save();
   try {
     if (repeatData({ id, body })) throw "重复请求";
-    const binParams = await initTag(body);
-    PlotLog.params = {
-      binParams,
-      body
-    };
+    if (!body.symbol) throw "symbol不能为空";
+    if (!body.position_size) throw "position_size不能为空";
+    if (!body.side) throw "side不能为空";
+    if (!body.quantity) throw "quantity不能为空";
+    if (!body.comment) throw "comment不能为空";
+
+    PlotLog.params = body;
     const plot = await models.Plot.findOne({ mark: id });
     if (!plot) throw "策略不存在";
     PlotLog.msg = "策略初始化成功";
-    PlotLog.comment = binParams.comment;
+    PlotLog.comment = body.comment;
+    const binParams: ResultType = {
+      symbol: body.symbol,
+      position_side: body.position_size,
+      side: body.side,
+      quantity: Number(body.quantity), //交易数量
+      price: Number(body.price || 0), //价格
+      comment: body.comment
+    };
+
+    if (!["OPEN", "CLOSE", "INCR", "DECR", "TURNUP", "TURNDOWN"].includes(binParams.side)) throw "side 参数错误";
+    if (!["LONG", "SHORT"].includes(binParams.position_side)) throw "position_side 参数错误";
+    if (binParams.quantity <= 0) throw "quantity 参数错误";
+    if (binParams.price <= 0) throw "price 参数错误";
+
     for (let key_id in plot.key_id) {
       let key;
       if (bins[key_id]) {
@@ -47,12 +70,7 @@ export const tvInit = async (c: any) => {
       }
       if (key) {
         bins[key_id] = key;
-        initKey({
-          key,
-          plot,
-          params: binParams,
-          body
-        });
+        console.log({ key, plot, params: binParams, body, bins });
       } else {
         plot.key_id = plot.key_id.filter((k: any) => k != key_id);
       }
