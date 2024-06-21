@@ -16,5 +16,5 @@ routes.post("/order/:id", async (c) => {
 });
 
 routes.all("*", (c) => {
-  return c.text("© 2024 GitHub Phrynus All rights reserved.", { status: 200 });
+  return c.text("© 2024 GitHub Phrynus All rights reserved. #404", { status: 404 });
 });
