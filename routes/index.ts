@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { tvInit } from "~/controllers/tv";
-import { oInit } from "~/controllers/o";
+import { orderInit } from "~/controllers/order";
 export const routes = new Hono();
 // Add your routes here
 routes.use(logger());
@@ -11,10 +11,10 @@ routes.use(logger());
 routes.post("/tv/:id", async (c) => {
   return await tvInit(c);
 });
-routes.post("/o/:id", async (c) => {
-  return await oInit(c);
+routes.post("/order/:id", async (c) => {
+  return await orderInit(c);
 });
 
 routes.all("*", (c) => {
-  return c.text("???", { status: 200 });
+  return c.text("© 2024 GitHub Phrynus All rights reserved.", { status: 200 });
 });

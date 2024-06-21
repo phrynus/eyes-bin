@@ -32,7 +32,7 @@ const repeatData = (c: any) => {
   return true;
 };
 
-export const oInit = async (c: any) => {
+export const orderInit = async (c: any) => {
   const { id } = c.req.param();
   const isJson = c.req.header("content-type").includes("application/json");
   const body = isJson ? await c.req.json() : await c.req.parseBody();
