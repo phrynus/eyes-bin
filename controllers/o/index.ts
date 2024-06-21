@@ -1,7 +1,9 @@
 import models from "~/models";
 import { bins } from "~/config";
+import { initKey } from "../initKey";
+
 type Position = "LONG" | "SHORT";
-type Side = "OPEN" | "CLOSE" | "INCR" | "DECR" | "TURNUP" | "TURNDOWN";
+type Side = "OPEN" | "CLOSE" | "INCR" | "DECR" | "TURNUP" | "TURNDOWN" | "BUY" | "SELL";
 type ResultType = {
   symbol: string;
   position_side: Position;
@@ -9,6 +11,7 @@ type ResultType = {
   quantity: number;
   price: number;
   comment: string;
+  action: string;
 };
 
 let safeRepeatList: any = [];
@@ -53,13 +56,31 @@ export const oInit = async (c: any) => {
       side: body.side,
       quantity: Number(body.quantity), //交易数量
       price: Number(body.price || 0), //价格
-      comment: body.comment
+      comment: body.comment,
+      action: "BUY"
     };
 
     if (!["OPEN", "CLOSE", "INCR", "DECR", "TURNUP", "TURNDOWN"].includes(binParams.side)) throw "side 参数错误";
     if (!["LONG", "SHORT"].includes(binParams.position_side)) throw "position_side 参数错误";
     if (binParams.quantity <= 0) throw "quantity 参数错误";
     if (binParams.price <= 0) throw "price 参数错误";
+
+    // 根据OPEN|CLOSE|INCR|DECR|TURNUP|TURNDOWN 和body.position_size来设置side
+    if (binParams.side == "OPEN") {
+      binParams.action = binParams.position_side == "LONG" ? "BUY" : "SELL";
+    } else if (binParams.side == "CLOSE") {
+      binParams.action = binParams.position_side == "LONG" ? "SELL" : "BUY";
+    } else if (binParams.side == "INCR") {
+      binParams.action = binParams.position_side == "LONG" ? "BUY" : "SELL";
+    } else if (binParams.side == "DECR") {
+      binParams.action = binParams.position_side == "LONG" ? "SELL" : "BUY";
+    } else if (binParams.side == "TURNUP") {
+      binParams.action = binParams.position_side == "LONG" ? "BUY" : "SELL";
+    } else if (binParams.side == "TURNDOWN") {
+      binParams.action = binParams.position_side == "LONG" ? "SELL" : "BUY";
+    } else {
+      throw "side 设置错误";
+    }
 
     for (let key_id in plot.key_id) {
       let key;
@@ -70,7 +91,12 @@ export const oInit = async (c: any) => {
       }
       if (key) {
         bins[key_id] = key;
-        console.log({ key, plot, params: binParams, body, bins });
+        initKey({
+          key,
+          plot,
+          params: binParams,
+          body
+        });
       } else {
         plot.key_id = plot.key_id.filter((k: any) => k != key_id);
       }

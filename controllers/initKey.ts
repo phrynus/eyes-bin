@@ -36,7 +36,7 @@ export const initKey = async (o: any) => {
       ._(
         {
           method: "POST",
-          url: `/fapi/v1/order`,
+          url: `/fapi/v1/order/test`,
           params: bin_params
         },
         true

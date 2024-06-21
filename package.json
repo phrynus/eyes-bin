@@ -3,7 +3,7 @@
   "module": "main.ts",
   "scripts": {
     "start": "bun run main.ts",
-    "start-w": "bun --watch run main.ts",
+    "dev": "bun --watch run main.ts",
     "build": "bun build main.ts"
   },
   "devDependencies": {

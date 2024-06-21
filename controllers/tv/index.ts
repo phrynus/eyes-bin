@@ -1,6 +1,6 @@
 import models from "~/models";
 import { initTag } from "./initTag";
-import { initKey } from "./initKey";
+import { initKey } from "../initKey";
 import { bins } from "~/config";
 
 let safeRepeatList: any = [];

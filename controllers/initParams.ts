@@ -30,14 +30,7 @@ export const initParams = async (o: any) => {
       }
     }
     // 补全仓位
-    if (
-      params.side !== "TURNUP" &&
-      params.side !== "TURNDOWN" &&
-      params.side !== "OPEN" &&
-      params.side !== "DECR" &&
-      params.side !== "CLOSE" &&
-      type.balance
-    ) {
+    if (params.side == "INCR" && type.balance && params.market_size) {
       let a = Math.abs(Number(params.market_size));
       let b = Math.abs(Number(currentPosition.positionAmt));
       let num = 0;
@@ -69,7 +62,6 @@ export const initParams = async (o: any) => {
       type: type.type,
       positionSide: params.position_side,
       side: params.action,
-      // 控制params.quantity小数点位数为symbolInfo.quantityPrecision
       quantity: params.quantity.toFixed(symbolInfo.quantityPrecision)
     };
 
