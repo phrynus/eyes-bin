@@ -1,4 +1,5 @@
 import models from "~/models";
+import BigNumber from "bignumber.js";
 
 export const initParams = async (o: any) => {
   const { symbolInfo, type, key, params, binanceApi, keyLog } = o;
@@ -9,7 +10,7 @@ export const initParams = async (o: any) => {
     //   throw "请先设置持仓方向";
     // }
     const account = await binanceApi._({ method: "GET", url: "/fapi/v2/account" });
-    const positions = account.positions.filter((p: any) => Number(p.positionInitialMargin) > 0);
+    const positions = account.positions.filter((p: any) => new BigNumber(p.positionInitialMargin).gt(0));
     // 取当前持仓
     const currentPosition = positions.find((p: any) => p.symbol === params.symbol.split(".")[0]) || { positionAmt: 0 };
     key.ac_num = positions || [];
@@ -31,19 +32,21 @@ export const initParams = async (o: any) => {
     }
     // 补全仓位
     if (params.side == "INCR" && type.balance && params.market_size) {
-      let a = Math.abs(Number(params.market_size));
-      let b = Math.abs(Number(currentPosition.positionAmt));
-      let num = 0;
-      // 判断a 是否与b 相差是否大于10%
-      if (a / b > 1.1) {
-        num = a - b;
-      } else if (a / b < 0.9) {
-        num = b - a;
+      let a = new BigNumber(params.market_size).abs();
+      let b = new BigNumber(currentPosition.positionAmt).abs();
+      let num = new BigNumber(0);
+
+      // 判断 a 是否与 b 相差是否大于 10%
+      if (a.div(b).gt(1.1)) {
+        num = a.minus(b);
+      } else if (a.div(b).lt(0.9)) {
+        num = b.minus(a);
         params.action = params.action === "BUY" ? "SELL" : "BUY";
       } else {
-        num = params.quantity;
+        num = new BigNumber(params.quantity);
       }
-      params.quantity = Number(num);
+
+      params.quantity = num.toNumber();
     }
 
     if (type.type === "MARKET") {
@@ -89,7 +92,7 @@ export const initParams = async (o: any) => {
           params: { symbol: bin_params.symbol }
         });
         let price = bin_params.side == "BUY" ? bestPrice.bidPrice : bestPrice.askPrice;
-        bin_params.price = Number(price).toFixed(symbolInfo.pricePrecision);
+        bin_params.price = new BigNumber(price).toFixed(symbolInfo.pricePrecision);
       }
     }
 

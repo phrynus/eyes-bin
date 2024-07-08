@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import axios from "axios";
+import BigNumber from "bignumber.js";
 
 if (!process.env.MONGODB_URI) throw Error("MONGODB_URI is already set!");
 try {
@@ -37,21 +38,21 @@ export const binanceConfig = {
         marketTakeBound: s.marketTakeBound,
         // 价格限制
         PRICE_FILTER: {
-          maxPrice: Number(a.maxPrice),
-          minPrice: Number(a.minPrice),
-          tickSize: Number(a.tickSize)
+          maxPrice: new BigNumber(a.maxPrice).toNumber(),
+          minPrice: new BigNumber(a.minPrice).toNumber(),
+          tickSize: new BigNumber(a.tickSize).toNumber()
         },
         // 数量限制
         LOT_SIZE: {
-          maxQty: Number(b.maxQty),
-          minQty: Number(b.minQty),
-          stepSize: Number(b.stepSize)
+          maxQty: new BigNumber(b.maxQty).toNumber(),
+          minQty: new BigNumber(b.minQty).toNumber(),
+          stepSize: new BigNumber(b.stepSize).toNumber()
         },
         // 市价订单数量限制
         MARKET_LOT_SIZE: {
-          maxQty: Number(c.maxQty),
-          minQty: Number(c.minQty),
-          stepSize: Number(c.stepSize)
+          maxQty: new BigNumber(c.maxQty).toNumber(),
+          minQty: new BigNumber(c.minQty).toNumber(),
+          stepSize: new BigNumber(c.stepSize).toNumber()
         }
       };
     });

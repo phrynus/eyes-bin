@@ -1,6 +1,7 @@
 import models from "~/models";
 import { bins } from "~/config";
 import { initKey } from "../initKey";
+import BigNumber from "bignumber.js";
 
 type Position = "LONG" | "SHORT";
 type Side = "OPEN" | "CLOSE" | "INCR" | "DECR" | "TURNUP" | "TURNDOWN" | "BUY" | "SELL";
@@ -54,8 +55,8 @@ export const orderInit = async (c: any) => {
       symbol: body.symbol,
       position_side: body.position_size,
       side: body.side,
-      quantity: Number(body.quantity), //交易数量
-      price: Number(body.price || 0), //价格
+      quantity: new BigNumber(body.quantity).toNumber(), //交易数量
+      price: new BigNumber(body.price || 0).toNumber(), //价格
       comment: body.comment,
       action: "BUY"
     };

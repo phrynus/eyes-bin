@@ -4,7 +4,11 @@ import { tvInit } from "~/controllers/tv";
 import { orderInit } from "~/controllers/order";
 export const routes = new Hono();
 // Add your routes here
-routes.use(logger());
+routes.use(
+  logger((message: string, ...rest: string[]) => {
+    console.log(new Date().toLocaleString(), message, ...rest);
+  })
+);
 // 中间件
 
 // Example route
@@ -16,5 +20,6 @@ routes.post("/order/:id", async (c) => {
 });
 
 routes.all("*", (c) => {
+  console.log(new Date().toLocaleString(), " ", c.req);
   return c.text("© 2024 GitHub Phrynus All rights reserved. #404", { status: 404 });
 });

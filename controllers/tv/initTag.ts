@@ -1,3 +1,5 @@
+import BigNumber from "bignumber.js";
+
 export const initTag = async (body: any) => {
   try {
     const _data = body;
@@ -19,9 +21,9 @@ export const initTag = async (body: any) => {
       position_side: _data.market_position.toUpperCase(),
       side: "OPEN|CLOSE|INCR|DECR|TURNUP|TURNDOWN",
       action: _data.action.toUpperCase(),
-      market_size: Number(_data.market_position_size), // 当前仓位
-      quantity: Math.abs(Number(_data.market_position_size) - Number(_data.prev_market_position_size)), //交易数量
-      price: Number(_data.price), //价格
+      market_size: new BigNumber(_data.market_position_size).toNumber(), // 当前仓位
+      quantity: new BigNumber(_data.market_position_size).minus(_data.prev_market_position_size).abs(), //交易数量
+      price: new BigNumber(_data.price).toNumber(), //价格
       comment: _data.comment
     };
     if (_data.market_position === "flat") {
