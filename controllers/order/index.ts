@@ -2,6 +2,7 @@ import models from "~/models";
 import { bins } from "~/config";
 import { initKey } from "../initKey";
 import BigNumber from "bignumber.js";
+import { safeList } from "~/utils/safeList"; // 导入安全列表函数
 
 type Position = "LONG" | "SHORT";
 type Side = "OPEN" | "CLOSE" | "INCR" | "DECR" | "TURNUP" | "TURNDOWN" | "BUY" | "SELL";
@@ -15,31 +16,13 @@ type ResultType = {
   action: string;
 };
 
-let safeRepeatList: any = [];
-
-const repeatData = (c: any) => {
-  const time: number = Date.now();
-  const filteredTrades = safeRepeatList.filter((trade: any) => trade.time > time - 1000 * 60 * 10);
-  // filteredTrades 里面是否有重复的交易
-  const hasRepeat = filteredTrades.some((trade: any) => {
-    return JSON.stringify(trade.c) == JSON.stringify(c);
-  });
-  if (!hasRepeat) {
-    safeRepeatList.unshift({ time, c });
-    return false;
-  } else if (safeRepeatList.length > 1000) {
-    safeRepeatList.pop();
-  }
-  return true;
-};
-
 export const orderInit = async (c: any) => {
   const { id } = c.req.param();
   const isJson = c.req.header("content-type").includes("application/json");
   const body = isJson ? await c.req.json() : await c.req.parseBody();
   const PlotLog = await new models.PlotLog({ plot_id: id, params: body }).save();
   try {
-    if (repeatData({ id, body })) throw "重复请求";
+    if (safeList({ id, body })) throw "重复请求";
     if (!body.symbol) throw "symbol不能为空";
     if (!body.position_size) throw "position_size不能为空";
     if (!body.side) throw "side不能为空";
@@ -108,6 +91,7 @@ export const orderInit = async (c: any) => {
   } catch (e: any) {
     PlotLog.msg = e.toString();
     PlotLog.save();
+    console.error("orderInit", new Date().toISOString(), e);
     return c.text(e, 500);
   }
 };

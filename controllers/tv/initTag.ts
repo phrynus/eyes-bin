@@ -55,7 +55,8 @@ export const initTag = async (body: any) => {
     }
 
     return _result;
-  } catch (error: any) {
-    throw error;
+  } catch (e: any) {
+    console.error("tvInitTag.ts", new Date().toISOString(), e);
+    throw e;
   }
 };

@@ -9,7 +9,8 @@ const typeSchema = new Schema(
     type: { type: String, required: true, enum: ["MARKET", "LIMIT", "LIMITMARKET"], default: "MARKET" }, // LIMIT 限价单
     timeInForce: { type: String, required: true, enum: ["GTC", "IOC", "FOK", "GTX"], default: "GTC" }, // GTC - Good Till Cancel 成交为止（下单后仅有1年有效期，1年后自动取消）
     necessary: { type: Boolean, required: true, default: false }, // 必持仓
-    balance: { type: Boolean, required: true, default: false }, // 仓位补全
+    repair: { type: Boolean, required: true, default: false }, // 仓位补全
+    decrease: { type: Boolean, required: true, default: false }, // 仓位删减
     useBestPrice: { type: Boolean, required: true, default: false }, // 最佳挂单价格
     marginMode: { type: String, required: true, enum: ["ISOLATED", "CROSSED"], default: "CROSSED" } // 保证金模式
   },
