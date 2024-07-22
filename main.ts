@@ -15,3 +15,14 @@ export default app;
 // let p = new BigNumber(0.1);
 
 // console.log(p.lt(0.2));
+
+// new models.Type({
+//   leverage: 50,
+//   necessary: false,
+//   symbol: "1000PEPEUSDT.P.P",
+//   timeInForce: "GTC",
+//   type: "LIMITMARKET",
+//   useBestPrice: false,
+//   repair: true,
+//   decrease: false
+// }).save();

@@ -32,11 +32,18 @@ export const initParams = async (o: any) => {
     const currentPosition = positions.find((p: any) => p.symbol === params.symbol.split(".")[0]) || { positionAmt: 0 };
 
     // 更新键值对
-    key.ac_num = positions || [];
     delete account.positions;
-    key.ac_sum = { ...account, positions };
     keyLog.bin_positions = { ...account, positions };
-    await models.Key.updateOne({ _id: key._id }, { $set: key }, { upsert: true });
+    models.Key.updateOne(
+      { _id: key._id },
+      {
+        $set: {
+          ac_num: positions || [],
+          ac_sum: { ...account, positions }
+        }
+      },
+      { upsert: true }
+    );
 
     // 非必要类型的处理
     if (!type.necessary && params.side !== "CLOSE") {

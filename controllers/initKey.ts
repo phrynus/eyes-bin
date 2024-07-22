@@ -30,7 +30,7 @@ export const initKey = async (o: any) => {
 
     // 查找交易类型
     const type = await models.Type.findOne({ key_id: key._id, symbol: params.symbol });
-    if (!type) throw `${params.symbol} 类型不存在`;
+    if (!type) throw `${params.symbol} 未设置白名单`;
     keyLog.symbol_type = type;
 
     // 获取交易对信息
