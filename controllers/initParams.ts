@@ -104,7 +104,9 @@ export const initParams = async (o: any) => {
 
     // 平仓处理
     if (params.side === "CLOSE") {
-      bin_params.quantity = symbolInfo.MARKET_LOT_SIZE.maxQty.toFixed(symbolInfo.quantityPrecision);
+      bin_params.quantity = new BigNumber(symbolInfo.MARKET_LOT_SIZE.maxQty)
+        .times(0.95)
+        .toFixed(symbolInfo.quantityPrecision);
     }
 
     // 挂单处理
@@ -128,7 +130,7 @@ export const initParams = async (o: any) => {
           symbol: bin_params.symbol,
           positionSide: params.side === "TURNUP" ? "SHORT" : "LONG",
           side: params.side === "TURNUP" ? "BUY" : "SELL",
-          quantity: symbolInfo.MARKET_LOT_SIZE.maxQty,
+          quantity: new BigNumber(symbolInfo.MARKET_LOT_SIZE.maxQty).times(0.95).toFixed(symbolInfo.quantityPrecision),
           type: "MARKET",
           timeInForce: "GTC"
         }
