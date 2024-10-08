@@ -35,14 +35,29 @@ export const tvInit = async (c: any): Promise<any> => {
 
     // 初始化密钥
     for (const key_id of plot.key_id) {
-      let key = bins[key_id] || (await models.Key.findById(key_id));
-
+      let key = bins[key_id];
+      // 判断缓存中是否有 key 或 key 已过期
+      const isKeyExpired =
+        !key || !key.t || Date.now() - key.t > 1000 * 60 * 60 * 2;
+      // 如果 key 不存在或者过期，从数据库查找并更新时间戳
+      if (isKeyExpired) {
+        key = await models.Key.findById(key_id);
+        if (key) {
+          key.t = Date.now();
+          bins[key_id] = key; // 更新缓存
+        } else {
+          // key 查找不到，删除对应的 key_id
+          plot.key_id = plot.key_id.filter((k: any) => k !== key_id);
+          continue; // 提前返回，不再继续后面的逻辑
+        }
+      }
+      // 如果 key 存在，初始化 key
+      initKey({ key, plot, params: binParams, body });
+      // 再次更新 key 和时间戳
+      key = await models.Key.findById(key_id);
       if (key) {
-        bins[key_id] = key;
-        initKey({ key, plot, params: binParams, body });
-      } else {
-        // 如果密钥不存在，从plot对象中移除对应的key_id
-        plot.key_id = plot.key_id.filter((k: any) => k !== key_id);
+        key.t = Date.now();
+        bins[key_id] = key; // 更新缓存
       }
     }
 
@@ -54,7 +69,6 @@ export const tvInit = async (c: any): Promise<any> => {
     plotLog.msg = e.message; // 记录错误信息
     await plotLog.save();
     console.error("tvInit", new Date().toISOString(), e);
-
     return c.text(e.message, 500); // 返回错误响应
   }
 };
