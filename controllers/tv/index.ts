@@ -1,7 +1,6 @@
 import models from "~/models"; // 导入数据库模型
 import { initTag } from "./initTag"; // 导入标签初始化函数
 import { initKey } from "../initKey"; // 导入密钥初始化函数
-import { bins } from "~/config"; // 导入配置文件中的bins
 import { safeList } from "~/utils/safeList"; // 导入安全列表函数
 
 /**
@@ -35,29 +34,13 @@ export const tvInit = async (c: any): Promise<any> => {
 
     // 初始化密钥
     for (const key_id of plot.key_id) {
-      let key = bins[key_id];
-      // 判断缓存中是否有 key 或 key 已过期
-      const isKeyExpired =
-        !key || !key.t || Date.now() - key.t > 1000 * 60 * 60 * 2;
-      // 如果 key 不存在或者过期，从数据库查找并更新时间戳
-      if (isKeyExpired) {
-        key = await models.Key.findById(key_id);
-        if (key) {
-          key.t = Date.now();
-          bins[key_id] = key; // 更新缓存
-        } else {
-          // key 查找不到，删除对应的 key_id
-          plot.key_id = plot.key_id.filter((k: any) => k !== key_id);
-          continue; // 提前返回，不再继续后面的逻辑
-        }
-      }
-      // 如果 key 存在，初始化 key
-      initKey({ key, plot, params: binParams, body });
-      // 再次更新 key 和时间戳
-      key = await models.Key.findById(key_id);
+      let key = await models.Key.findById(key_id);
       if (key) {
-        key.t = Date.now();
-        bins[key_id] = key; // 更新缓存
+        initKey({ key, plot, params: binParams, body });
+      } else {
+        // key 查找不到，删除对应的 key_id
+        plot.key_id = plot.key_id.filter((k: any) => k !== key_id);
+        continue; // 提前返回，不再继续后面的逻辑
       }
     }
 

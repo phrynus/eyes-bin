@@ -18,8 +18,7 @@ process.on("SIGTERM", () => {
 });
 // 导出mongoose
 export const db = mongoose.connection.useDb("bin");
-// 存key对象
-export const bins: { [symbol: string]: any } = {};
+
 // 存币安配置
 export const binanceConfig = {
   exchangeInfo: await axios.get(`${process.env.BINANCE_API_URL}/fapi/v1/exchangeInfo`).then((res) => {
@@ -65,6 +64,5 @@ export const binanceConfig = {
 
 export const config = {
   db,
-  bins,
   binanceConfig
 };
