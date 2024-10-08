@@ -1,0 +1,59 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © phrynus
+
+//@version=5
+strategy("trend-v1", overlay = true)
+
+start     = input.time(timestamp('2020-01-01T00:00:00'),'开始', group='时间周期')
+finish    = input.time(timestamp('2030-12-31T00:00:00'),'结束', group='时间周期')
+isStart   = time >= start and time <= finish ? true : false
+
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+// 方法集
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+
+// ssl
+fn_ssl(length) =>
+    hh  = ta.hma(high, length)
+    ll  = ta.hma(low, length)
+    hlv = int(na)
+    hlv := close > hh ? 1 : close < ll ? -1 : hlv[1]
+    ssl = hlv < 0 ? hh : ll
+
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+// EMA
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+emaPlot       = input.bool(false, "EMA 绘图", group="绘图")
+ema_1        = input.int(7, "EMA 周期", group="EMA")
+ema_2        = input.int(21, "EMA 周期", group="EMA")
+ema_3        = input.int(50, "EMA 周期", group="EMA")
+ema_val_1      = ta.ema(close, ema_1)
+ema_val_2    = ta.ema(close, ema_2)
+ema_val_3    = ta.ema(close, ema_3)
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+// SSL
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+sslPlot     = input.bool(true, "SSL 绘图", group="绘图")
+ssl_l       = input.int(55, "SSL 周期", group="SSL")
+ssl         = fn_ssl(ssl_l)
+ssl_color1  = ema_val_1 > ssl ? #00c3ff : ema_val_1  < ssl ? #ff0062 : na
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+// 交易规则
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+// 开多
+isBuy = ta.crossunder(ssl,ema_val_1)
+// 开空
+isSell = ta.crossover(ssl,ema_val_1)
+if isStart //规定时间
+    if isBuy
+        strategy.entry("Buy", strategy.long)
+    if isSell
+        strategy.entry("Sell", strategy.short)
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+// 绘图
+// -------------|---------------------------|---------------------------|-------------------|---------------|
+// style = plot.style_steplinebr 直角线
+plot(emaPlot?ema_val_1:na, "EMA 7", #fcc419, 1)
+plot(emaPlot?ema_val_2:na, "EMA 21", #845ef7, 1)
+plot(emaPlot?ema_val_3:na, "EMA 50", #7950f2, 1)
+plot(sslPlot?ssl:na, "SSL", ssl_color1, 2)
